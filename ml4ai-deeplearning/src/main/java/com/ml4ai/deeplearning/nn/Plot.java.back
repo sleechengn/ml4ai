@@ -1,0 +1,28 @@
+package com.ml4ai.deeplearning.nn;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartFrame;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.category.DefaultCategoryDataset;
+
+public class Plot {
+
+    public static DefaultCategoryDataset createLineChart(String text, String title) {
+        DefaultCategoryDataset dcd = new DefaultCategoryDataset(); //建立一个默认的拆线图
+        JFreeChart mChart = ChartFactory.createLineChart(
+                title,
+                "x",
+                "y",
+                dcd,
+                PlotOrientation.VERTICAL,
+                true,
+                true,
+                false);
+        ChartFrame chartFrame = new ChartFrame(text, mChart);
+        chartFrame.pack();
+        chartFrame.setVisible(true);
+        return dcd;
+    }
+
+}
