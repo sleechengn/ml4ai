@@ -75,7 +75,7 @@ public class Variable {
 
     //矩阵乘法
     public Variable matMul(Variable variable) {
-        if (this.data.type == Tensor.MATRIX_TYPE && variable.data.type == Tensor.MATRIX_TYPE) {
+        if (this.data.rank == Tensor.MATRIX_RANK && variable.data.rank == Tensor.MATRIX_RANK) {
             INDArray x_data = this.data.tensor;
             INDArray y_data = variable.data.tensor;
             INDArray z_data = x_data.mmul(y_data);
@@ -92,7 +92,7 @@ public class Variable {
 
     //矩阵（二阶张量）乘标量
     public Variable mulScalar(Variable variable) {
-        if (this.data.type == Tensor.MATRIX_TYPE && variable.data.type == Tensor.SCALAR_TYPE) {
+        if (this.data.rank == Tensor.MATRIX_RANK && variable.data.rank == Tensor.SCALAR_RANK) {
             INDArray x = this.data.tensor;
             double y = variable.data.scalar;
             INDArray z = x.mul(y);
@@ -110,7 +110,7 @@ public class Variable {
     //同类相加法
     public Variable add(Variable variable) {
         //张量加法
-        if (this.data.type > Tensor.SCALAR_TYPE && variable.data.type == this.data.type) {
+        if (this.data.rank > Tensor.SCALAR_RANK && variable.data.rank == this.data.rank) {
             INDArray x = this.data.tensor;
             INDArray y = variable.data.tensor;
             INDArray z = x.add(y);
@@ -119,7 +119,7 @@ public class Variable {
             var.setOperation(Operation.Add);
             var.setData(new Tensor(z));
             return var;
-        } else if (this.data.type == Tensor.SCALAR_TYPE && this.data.type == variable.data.type) {
+        } else if (this.data.rank == Tensor.SCALAR_RANK && this.data.rank == variable.data.rank) {
             double x = this.data.scalar;
             double y = variable.data.scalar;
             double z = x + y;
@@ -130,13 +130,13 @@ public class Variable {
             var.setData(new Tensor(z));
             return var;
         } else {
-            throw new IllegalStateException("错误的值类型,不支持[" + data.type + "]");
+            throw new IllegalStateException("错误的值类型,不支持[" + data.rank + "]");
         }
     }
 
     //减法
     public Variable sub(Variable variable) {
-        if (this.data.type > Tensor.SCALAR_TYPE && this.data.type == variable.data.type) {
+        if (this.data.rank > Tensor.SCALAR_RANK && this.data.rank == variable.data.rank) {
             INDArray x = this.data.tensor;
             INDArray y = variable.data.tensor;
             INDArray z = x.sub(y);
@@ -146,7 +146,7 @@ public class Variable {
             var.setData(new Tensor(z));
             return var;
         }
-        if (this.data.type == Tensor.SCALAR_TYPE && this.data.type == variable.data.type) {
+        if (this.data.rank == Tensor.SCALAR_RANK && this.data.rank == variable.data.rank) {
             double x = this.data.scalar;
             double y = variable.data.scalar;
             double z = x - y;
@@ -157,12 +157,12 @@ public class Variable {
             var.setData(new Tensor(z));
             return var;
         }
-        throw new IllegalStateException("错误的值类型,不支持[" + data.getType() + "]");
+        throw new IllegalStateException("错误的值类型,不支持[" + data.getRank() + "]");
     }
 
     //哈達馬
     public Variable hadamard(Variable variable) {
-        if (this.data.type > Tensor.SCALAR_TYPE && this.data.type == variable.data.type) {
+        if (this.data.rank > Tensor.SCALAR_RANK && this.data.rank == variable.data.rank) {
             INDArray x = this.data.tensor;
             INDArray y = variable.data.tensor;
             INDArray z = x.mul(y);
@@ -172,12 +172,12 @@ public class Variable {
             var.setData(new Tensor(z));
             return var;
         }
-        throw new IllegalStateException("错误的值类型,不支持[" + data.getType() + "]");
+        throw new IllegalStateException("错误的值类型,不支持[" + data.getRank() + "]");
     }
 
     //激活函数
     public Variable sigmoid() {
-        if (this.data.type > Tensor.SCALAR_TYPE) {
+        if (this.data.rank > Tensor.SCALAR_RANK) {
             INDArray x = this.data.tensor;
             INDArray y = Nd4j.zeros(x.shape());
             Nd4j.copy(x, y);
@@ -189,7 +189,7 @@ public class Variable {
             var.setData(new Tensor(z));
             return var;
         }
-        if (this.data.type == Tensor.SCALAR_TYPE) {
+        if (this.data.rank == Tensor.SCALAR_RANK) {
             double x = this.data.scalar;
             double z, y;
             y = mathSigmoid(x);
@@ -200,12 +200,12 @@ public class Variable {
             var.setData(new Tensor(z));
             return var;
         }
-        throw new IllegalStateException("错误的值类型,不支持[" + data.getType() + "]");
+        throw new IllegalStateException("错误的值类型,不支持[" + data.getRank() + "]");
     }
 
     //双曲正切
     public Variable tanh() {
-        if (this.data.type > Tensor.SCALAR_TYPE) {
+        if (this.data.rank > Tensor.SCALAR_RANK) {
             INDArray x = this.data.tensor;
             INDArray y = Nd4j.zeros(x.shape());
             Nd4j.copy(x, y);
@@ -217,7 +217,7 @@ public class Variable {
             var.setData(new Tensor(z));
             return var;
         }
-        if (this.data.type == Tensor.SCALAR_TYPE) {
+        if (this.data.rank == Tensor.SCALAR_RANK) {
             double x = this.data.scalar;
             double z, y;
             y = mathTanh(x);
@@ -233,7 +233,7 @@ public class Variable {
 
     //平均值
     public Variable mean() {
-        if (this.data.type > Tensor.SCALAR_TYPE) {
+        if (this.data.rank > Tensor.SCALAR_RANK) {
             INDArray x = this.data.tensor;
             double y = x.meanNumber().doubleValue();
             Variable var = new Variable();
@@ -242,15 +242,15 @@ public class Variable {
             var.setData(new Tensor(y));
             return var;
         }
-        if (this.data.type == Tensor.SCALAR_TYPE) {
+        if (this.data.rank == Tensor.SCALAR_RANK) {
             return this;
         }
-        throw new IllegalStateException("错误的值类型,不支持[" + data.getType() + "]");
+        throw new IllegalStateException("错误的值类型,不支持[" + data.getRank() + "]");
     }
 
     //求和
     public Variable sum() {
-        if (this.data.type > Tensor.SCALAR_TYPE) {
+        if (this.data.rank > Tensor.SCALAR_RANK) {
             INDArray x = this.data.tensor;
             double y = x.sumNumber().doubleValue();
             Variable var = new Variable();
@@ -259,15 +259,15 @@ public class Variable {
             var.setData(new Tensor(y));
             return var;
         }
-        if (this.data.type == Tensor.SCALAR_TYPE) {
+        if (this.data.rank == Tensor.SCALAR_RANK) {
             return this;
         }
-        throw new IllegalStateException("错误的值类型,不支持[" + data.type + "]");
+        throw new IllegalStateException("错误的值类型,不支持[" + data.rank + "]");
     }
 
     //求和
     public Variable log(double y) {
-        if (this.data.type > Tensor.SCALAR_TYPE) {
+        if (this.data.rank > Tensor.SCALAR_RANK) {
             INDArray x_data = this.data.tensor;
             INDArray x_cp = Nd4j.create(x_data.shape());
             Nd4j.copy(x_data, x_cp);
@@ -277,7 +277,7 @@ public class Variable {
             var.setDependencies(new Variable[]{this});
             var.setOperation(Operation.Log);
             return var;
-        } else if (this.data.type == Tensor.SCALAR_TYPE) {
+        } else if (this.data.rank == Tensor.SCALAR_RANK) {
             double x_data = this.data.scalar;
             double z = Math.log(x_data) / Math.log(y);
             Variable var = new Variable(z);
@@ -286,13 +286,13 @@ public class Variable {
             var.setOperation(Operation.Log);
             return var;
         }
-        throw new IllegalStateException("错误的值类型,不支持[" + data.type + "]");
+        throw new IllegalStateException("错误的值类型,不支持[" + data.rank + "]");
     }
 
 
     //平方
     public Variable square() {
-        if (this.data.type > Tensor.SCALAR_TYPE) {
+        if (this.data.rank > Tensor.SCALAR_RANK) {
             INDArray x = this.data.tensor;
             INDArray y, z;
             y = x.mul(x);
@@ -301,7 +301,7 @@ public class Variable {
             var.setOperation(Operation.Square);
             return var;
         }
-        if (this.data.type == Tensor.SCALAR_TYPE) {
+        if (this.data.rank == Tensor.SCALAR_RANK) {
             double x = this.data.scalar;
             double y, z;
             y = Math.pow(x, 2);
@@ -310,12 +310,12 @@ public class Variable {
             var.setOperation(Operation.Square);
             return var;
         }
-        throw new IllegalStateException("错误的值类型,不支持[" + data.type + "]");
+        throw new IllegalStateException("错误的值类型,不支持[" + data.rank + "]");
     }
 
     //线性整流
     public Variable relu() {
-        if (this.data.type > Tensor.SCALAR_TYPE) {
+        if (this.data.rank > Tensor.SCALAR_RANK) {
             INDArray x = this.data.tensor;
             INDArray y = Nd4j.create(x.shape());
             Nd4j.copy(x, y);
@@ -325,19 +325,19 @@ public class Variable {
             var.setOperation(Operation.RELU);
             return var;
         }
-        if (this.data.type == Tensor.SCALAR_TYPE) {
+        if (this.data.rank == Tensor.SCALAR_RANK) {
             double x = this.data.scalar;
             Variable var = new Variable(x > 0 ? x : 0D);
             var.setDependencies(new Variable[]{this});
             var.setOperation(Operation.RELU);
             return var;
         }
-        throw new IllegalStateException("错误的值类型,不支持[" + data.type + "]");
+        throw new IllegalStateException("错误的值类型,不支持[" + data.rank + "]");
     }
 
     //线性整流
     public Variable leaky_relu() {
-        if (this.data.type > Tensor.SCALAR_TYPE) {
+        if (this.data.rank > Tensor.SCALAR_RANK) {
             INDArray x = this.data.tensor;
             INDArray y = Nd4j.create(x.shape());
             Nd4j.copy(x, y);
@@ -347,18 +347,18 @@ public class Variable {
             var.setOperation(Operation.LRELU);
             return var;
         }
-        if (this.data.type == Tensor.SCALAR_TYPE) {
+        if (this.data.rank == Tensor.SCALAR_RANK) {
             double x = this.data.scalar;
             Variable var = new Variable(x > 0 ? x : x * 0.01);
             var.setDependencies(new Variable[]{this});
             var.setOperation(Operation.LRELU);
             return var;
         }
-        throw new IllegalStateException("错误的值类型,不支持[" + data.type + "]");
+        throw new IllegalStateException("错误的值类型,不支持[" + data.rank + "]");
     }
 
     public Variable addVec(Variable variable) {
-        if (this.data.type > Tensor.SCALAR_TYPE && this.data.type == Tensor.MATRIX_TYPE) {
+        if (this.data.rank > Tensor.SCALAR_RANK && this.data.rank == Tensor.MATRIX_RANK) {
             INDArray x = this.data.tensor;
             INDArray y = variable.data.tensor;
             int[] _x_shape = x.shape();
@@ -389,7 +389,7 @@ public class Variable {
             var.setOperation(Operation.AddVec);
             return var;
         } else {
-            throw new IllegalStateException("错误的值类型,不支持[" + data.type + "]");
+            throw new IllegalStateException("错误的值类型,不支持[" + data.rank + "]");
         }
     }
 
@@ -442,14 +442,14 @@ public class Variable {
      * 正弦函数
      */
     public Variable sin() {
-        if (this.data.type > Tensor.SCALAR_TYPE) {
+        if (this.data.rank > Tensor.SCALAR_RANK) {
             INDArray x = this.data.tensor;
             INDArray y = Transforms.sin(x);
             Variable var = new Variable(y);
             var.setOperation(Operation.Sin);
             var.dependencies = new Variable[]{this};
             return var;
-        } else if (this.data.type == Tensor.SCALAR_TYPE) {
+        } else if (this.data.rank == Tensor.SCALAR_RANK) {
             double x = this.data.scalar;
             double y = Math.sin(x);
             Variable var = new Variable(y);
@@ -465,14 +465,14 @@ public class Variable {
      * 余弦函数
      */
     public Variable cos() {
-        if (this.data.type > Tensor.SCALAR_TYPE) {
+        if (this.data.rank > Tensor.SCALAR_RANK) {
             INDArray x = this.data.tensor;
             INDArray y = Transforms.cos(x);
             Variable var = new Variable(y);
             var.setOperation(Operation.Cos);
             var.dependencies = new Variable[]{this};
             return var;
-        } else if (this.data.type == Tensor.SCALAR_TYPE) {
+        } else if (this.data.rank == Tensor.SCALAR_RANK) {
             double x = this.data.scalar;
             double y = Math.cos(x);
             Variable var = new Variable(y);
@@ -486,7 +486,7 @@ public class Variable {
 
     @Override
     public String toString() {
-        if (data.type > 0) {
+        if (data.rank > 0) {
             return data.tensor.toString();
         } else {
             return Double.valueOf(data.scalar).toString();

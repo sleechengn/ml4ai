@@ -26,9 +26,9 @@ public class GradientDescent implements NNOptimizer {
     @Override
     public void update() {
         for (Variable variable : params) {
-            if (variable.data.type == Tensor.SCALAR_TYPE) {
+            if (variable.data.rank == Tensor.SCALAR_RANK) {
                 variable.data.scalar -= delta * variable.grad.scalar;
-            } else if (variable.data.type > Tensor.SCALAR_TYPE) {
+            } else if (variable.data.rank > Tensor.SCALAR_RANK) {
                 variable.data.tensor.subi(variable.grad.tensor.mul(delta));
             }
         }

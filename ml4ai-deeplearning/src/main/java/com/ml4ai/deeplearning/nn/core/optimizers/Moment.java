@@ -20,10 +20,10 @@ public class Moment implements NNOptimizer {
 
         public Parameter(Variable variable) {
             this.variable = variable;
-            if (variable.data.type == Tensor.SCALAR_TYPE) {
+            if (variable.data.rank == Tensor.SCALAR_RANK) {
                 this.type = 0;
                 this.speed = new Tensor(0D);
-            } else if (variable.data.type > Tensor.SCALAR_TYPE) {
+            } else if (variable.data.rank > Tensor.SCALAR_RANK) {
                 this.type = 1;
                 this.speed = new Tensor(Nd4j.zeros(this.variable.data.tensor.shape()));
             } else {

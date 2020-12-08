@@ -20,14 +20,14 @@ public class Toolkit {
     public void grad2zero(Variable variable) {
         variable.backwardTreeOperation(var -> {
             var.setBackward(0);
-            if (var.data.type > Tensor.SCALAR_TYPE) {
+            if (var.data.rank > Tensor.SCALAR_RANK) {
                 if (var.grad == null) {
                     var.setGrad(new Tensor(Nd4j.zeros(var.data.tensor.shape())));
                 } else {
                     var.grad.tensor.muli(0);
                 }
             }
-            if (var.data.type == Tensor.SCALAR_TYPE) {
+            if (var.data.rank == Tensor.SCALAR_RANK) {
                 if (var.grad == null) {
                     var.setGrad(new Tensor(Double.valueOf(0)));
                 } else {
@@ -42,21 +42,21 @@ public class Toolkit {
     }
 
     public void backward(Variable variable, double scalar) {
-        if (variable.data.type == Tensor.SCALAR_TYPE) {
+        if (variable.data.rank == Tensor.SCALAR_RANK) {
             variable.setGrad(new Tensor(scalar));
             variable.backward = 0;
             backwardWith(variable);
         } else
-            throw new IllegalStateException("不支持反向传播的类型[" + variable.data.type + "]");
+            throw new IllegalStateException("不支持反向传播的类型[" + variable.data.rank + "]");
     }
 
     public void backward(Variable variable, INDArray tensor) {
-        if (variable.data.type > Tensor.SCALAR_TYPE) {
+        if (variable.data.rank > Tensor.SCALAR_RANK) {
             variable.setGrad(new Tensor(tensor));
             variable.backward = 0;
             backwardWith(variable);
         } else
-            throw new IllegalStateException("不支持反向传播的类型[" + variable.data.type + "]");
+            throw new IllegalStateException("不支持反向传播的类型[" + variable.data.rank + "]");
     }
 
     public void backwardWith(Variable variable) {
@@ -92,7 +92,7 @@ public class Toolkit {
                     /**
                      * 张量相加
                      */
-                    if (current.data.type > Tensor.SCALAR_TYPE && x.data.type == y.data.type && x.data.type == current.data.type) {
+                    if (current.data.rank > Tensor.SCALAR_RANK && x.data.rank == y.data.rank && x.data.rank == current.data.rank) {
                         x.grad.tensor.addi(current.grad.tensor);
                         y.grad.tensor.addi(current.grad.tensor);
                         if (--x.backward == 0) {
@@ -104,7 +104,7 @@ public class Toolkit {
                         /**
                          * 标量相加
                          */
-                    } else if (current.data.type == Tensor.SCALAR_TYPE && x.data.type == y.data.type && x.data.type == current.data.type) {
+                    } else if (current.data.rank == Tensor.SCALAR_RANK && x.data.rank == y.data.rank && x.data.rank == current.data.rank) {
                         x.grad.scalar += current.grad.scalar;
                         y.grad.scalar += current.grad.scalar;
                         if (--x.backward == 0) {
@@ -114,14 +114,14 @@ public class Toolkit {
                             variables.add(y);
                         }
                     } else {
-                        throw new IllegalStateException("不支持此类型：Rank:" + current.data.type + " + " + "Rank:" + x.data.type + " Rank:" + y.data.type);
+                        throw new IllegalStateException("不支持此类型：Rank:" + current.data.rank + " + " + "Rank:" + x.data.rank + " Rank:" + y.data.rank);
                     }
                 }
                 break;
                 case Sub: {
                     Variable x = current.dependencies[0];
                     Variable y = current.dependencies[1];
-                    if (current.data.type == Tensor.SCALAR_TYPE) {
+                    if (current.data.rank == Tensor.SCALAR_RANK) {
                         x.grad.scalar += current.grad.scalar;
                         y.grad.scalar -= 1 * current.grad.scalar;
                         if (--x.backward == 0) {
@@ -130,7 +130,7 @@ public class Toolkit {
                         if (--y.backward == 0) {
                             variables.add(y);
                         }
-                    } else if (current.data.type > Tensor.SCALAR_TYPE) {
+                    } else if (current.data.rank > Tensor.SCALAR_RANK) {
                         x.grad.tensor.addi(current.grad.tensor);
                         y.grad.tensor.subi(current.grad.tensor);
                         if (--x.backward == 0) {
@@ -146,8 +146,8 @@ public class Toolkit {
                 break;
                 case Mean: {
                     Variable x = current.dependencies[0];
-                    if (current.data.type == Tensor.SCALAR_TYPE) {
-                        if (x.data.type > Tensor.SCALAR_TYPE) {
+                    if (current.data.rank == Tensor.SCALAR_RANK) {
+                        if (x.data.rank > Tensor.SCALAR_RANK) {
                             INDArray x_data = x.data.tensor;
                             List<Integer> shape = new LinkedList<>();
                             int[] x_data_shape = x_data.shape();
@@ -159,7 +159,7 @@ public class Toolkit {
                             if (--x.backward == 0) {
                                 variables.add(x);
                             }
-                        } else if (x.data.type == Tensor.SCALAR_TYPE) {
+                        } else if (x.data.rank == Tensor.SCALAR_RANK) {
                             x.grad.scalar += current.grad.scalar;
                             if (--x.backward == 0) {
                                 variables.add(x);
@@ -174,15 +174,15 @@ public class Toolkit {
                 break;
                 case Sum: {
                     Variable x = current.dependencies[0];
-                    if (current.data.type == Tensor.SCALAR_TYPE) {
-                        if (x.data.type > Tensor.SCALAR_TYPE) {
+                    if (current.data.rank == Tensor.SCALAR_RANK) {
+                        if (x.data.rank > Tensor.SCALAR_RANK) {
                             INDArray x_data = x.data.tensor;
                             int[] x_data_shape = x_data.shape();
                             x.grad.tensor.addi(Nd4j.ones(x_data_shape).mul(current.grad.scalar));
                             if (--x.backward == 0) {
                                 variables.add(x);
                             }
-                        } else if (x.data.type == Tensor.SCALAR_TYPE) {
+                        } else if (x.data.rank == Tensor.SCALAR_RANK) {
                             x.grad.scalar += current.grad.scalar;
                             if (--x.backward == 0) {
                                 variables.add(x);
@@ -196,13 +196,13 @@ public class Toolkit {
                 break;
                 case Square: {
                     Variable x = current.dependencies[0];
-                    if (current.data.type > Tensor.SCALAR_TYPE) {
+                    if (current.data.rank > Tensor.SCALAR_RANK) {
                         INDArray x_data = x.data.tensor;
                         x.grad.tensor.addi(x_data.mul(2).mul(current.grad.tensor));
                         if (--x.backward == 0) {
                             variables.add(x);
                         }
-                    } else if (current.data.type == Tensor.SCALAR_TYPE) {
+                    } else if (current.data.rank == Tensor.SCALAR_RANK) {
                         x.grad.scalar += x.data.scalar * 2 * current.grad.scalar;
                         if (--x.backward == 0) {
                             variables.add(x);
@@ -213,7 +213,7 @@ public class Toolkit {
                 }
                 break;
                 case MatMul: {
-                    if (current.data.type > Tensor.SCALAR_TYPE) {
+                    if (current.data.rank > Tensor.SCALAR_RANK) {
                         Variable x = current.dependencies[0];
                         Variable y = current.dependencies[1];
                         y.grad.tensor.addi((x.data.tensor.transpose().mmul(current.grad.tensor)));
@@ -230,7 +230,7 @@ public class Toolkit {
                 }
                 break;
                 case Sigmoid: {
-                    if (current.data.type > Tensor.SCALAR_TYPE) {
+                    if (current.data.rank > Tensor.SCALAR_RANK) {
                         Variable x = current.dependencies[0];
                         INDArray x_data = current.dependencies[0].data.tensor;
                         INDArray x_data_c = Nd4j.create(x_data.shape());
@@ -239,7 +239,7 @@ public class Toolkit {
                         if (--x.backward == 0) {
                             variables.add(x);
                         }
-                    } else if (current.data.type == Tensor.SCALAR_TYPE) {
+                    } else if (current.data.rank == Tensor.SCALAR_RANK) {
                         Variable y = current.dependencies[0];
                         double x = y.data.scalar;
                         y.grad.scalar += mathSigmoid(x) * (1 - mathSigmoid(x));
@@ -252,7 +252,7 @@ public class Toolkit {
                 }
                 break;
                 case TanH: {
-                    if (current.data.type > Tensor.SCALAR_TYPE) {
+                    if (current.data.rank > Tensor.SCALAR_RANK) {
                         Variable x = current.dependencies[0];
                         INDArray x_data = x.data.tensor;
                         INDArray x_data_c = Nd4j.zeros(x_data.shape());
@@ -261,7 +261,7 @@ public class Toolkit {
                         if (--x.backward == 0) {
                             variables.add(x);
                         }
-                    } else if (current.data.type == Tensor.SCALAR_TYPE) {
+                    } else if (current.data.rank == Tensor.SCALAR_RANK) {
                         Variable y = current.dependencies[0];
                         double x = y.data.scalar;
                         y.grad.scalar += 1 - Math.pow(mathTanh(x), 2);
@@ -274,7 +274,7 @@ public class Toolkit {
                 }
                 break;
                 case RELU: {
-                    if (current.data.type > Tensor.SCALAR_TYPE) {
+                    if (current.data.rank > Tensor.SCALAR_RANK) {
                         Variable x = current.dependencies[0];
                         INDArray x_data = x.data.tensor;
                         INDArray x_data_cpp = Nd4j.create(x_data.shape());
@@ -283,7 +283,7 @@ public class Toolkit {
                         if (--x.backward == 0) {
                             variables.add(x);
                         }
-                    } else if (current.data.type == Tensor.SCALAR_TYPE) {
+                    } else if (current.data.rank == Tensor.SCALAR_RANK) {
                         Variable y = current.dependencies[0];
                         double x = y.data.scalar;
                         y.grad.scalar += x >= 0 ? 1 : 0;
@@ -296,7 +296,7 @@ public class Toolkit {
                 }
                 break;
                 case LRELU: {
-                    if (current.data.type > Tensor.SCALAR_TYPE) {
+                    if (current.data.rank > Tensor.SCALAR_RANK) {
                         Variable x = current.dependencies[0];
                         INDArray x_data = x.data.tensor;
                         INDArray x_data_cpp = Nd4j.create(x_data.shape());
@@ -305,7 +305,7 @@ public class Toolkit {
                         if (--x.backward == 0) {
                             variables.add(x);
                         }
-                    } else if (current.data.type == Tensor.SCALAR_TYPE) {
+                    } else if (current.data.rank == Tensor.SCALAR_RANK) {
                         Variable y = current.dependencies[0];
                         double x = y.data.scalar;
                         y.grad.scalar += x >= 0 ? 1 : 0.01;
@@ -370,7 +370,7 @@ public class Toolkit {
                 }
                 break;
                 case Log: {
-                    if (current.data.type > Tensor.SCALAR_TYPE) {
+                    if (current.data.rank > Tensor.SCALAR_RANK) {
                         INDArray current_gradient = current.grad.tensor;
                         Variable x = current.dependencies[0];
                         INDArray x_dat = x.data.tensor;
@@ -378,7 +378,7 @@ public class Toolkit {
                         if (--x.backward == 0) {
                             variables.add(x);
                         }
-                    } else if (current.data.type == Tensor.SCALAR_TYPE) {
+                    } else if (current.data.rank == Tensor.SCALAR_RANK) {
                         double current_gradient = current.grad.scalar;
                         Variable x = current.dependencies[0];
                         double x_dat = x.data.scalar;
@@ -392,7 +392,7 @@ public class Toolkit {
                 }
                 break;
                 case Separate: {
-                    if (current.data.type > Tensor.SCALAR_TYPE) {
+                    if (current.data.rank > Tensor.SCALAR_RANK) {
                         INDArray x = current.dependencies[0].data.tensor;
                         INDArray grad_x = current.dependencies[0].grad.tensor;
                         INDArrayIndex[] segmentation = current.segmentation;
@@ -403,7 +403,7 @@ public class Toolkit {
                             variables.add(current.dependencies[0]);
                         }
                     } else {
-                        throw new RuntimeException("不支持的类型:" + current.data.type);
+                        throw new RuntimeException("不支持的类型:" + current.data.rank);
                     }
                 }
                 break;
@@ -445,14 +445,14 @@ public class Toolkit {
                 }
                 break;
                 case Sin: {
-                    if (current.data.type > Tensor.SCALAR_TYPE) {
+                    if (current.data.rank > Tensor.SCALAR_RANK) {
                         Variable input_x = current.dependencies[0];
                         INDArray x_data = input_x.data.tensor;
                         input_x.grad.tensor.addi(Transforms.cos(x_data).mul(current.grad.tensor));
                         if (--input_x.backward == 0) {
                             variables.add(input_x);
                         }
-                    } else if (current.data.type == Tensor.SCALAR_TYPE) {
+                    } else if (current.data.rank == Tensor.SCALAR_RANK) {
                         Variable input = current.dependencies[0];
                         double input_x = input.data.scalar;
                         input.grad.scalar += current.grad.scalar * Math.cos(input_x);
@@ -465,14 +465,14 @@ public class Toolkit {
                 }
                 break;
                 case Cos: {
-                    if (current.data.type > Tensor.SCALAR_TYPE) {
+                    if (current.data.rank > Tensor.SCALAR_RANK) {
                         Variable input_x = current.dependencies[0];
                         INDArray x_data = input_x.data.tensor;
                         input_x.grad.tensor.subi(Transforms.sin(x_data).mul(current.grad.tensor));
                         if (--input_x.backward == 0) {
                             variables.add(input_x);
                         }
-                    } else if (current.data.type == Tensor.SCALAR_TYPE) {
+                    } else if (current.data.rank == Tensor.SCALAR_RANK) {
                         Variable input = current.dependencies[0];
                         double input_x = input.data.scalar;
                         input.grad.scalar -= current.grad.scalar * Math.sin(input_x);
