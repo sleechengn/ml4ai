@@ -4,7 +4,7 @@ import com.ml4ai.deeplearning.nn.BaseForwardNetwork;
 import com.ml4ai.deeplearning.nn.Linear;
 import com.ml4ai.deeplearning.nn.core.Toolkit;
 import com.ml4ai.deeplearning.nn.core.Variable;
-import com.ml4ai.deeplearning.nn.core.optimizers.Moment;
+import com.ml4ai.deeplearning.nn.core.optimizers.BinaryGradientDescent;
 import com.ml4ai.deeplearning.nn.core.optimizers.NNOptimizer;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -33,8 +33,8 @@ public class Demo {
 
         KxPlusB kxPlusB = new KxPlusB();
         Toolkit t = new Toolkit();
-        NNOptimizer optimizer = new Moment(kxPlusB.getParameters(), 0.01, 0.99);
-        for (int i = 0; i < 10000; i++) {
+        NNOptimizer optimizer = new BinaryGradientDescent(kxPlusB.getParameters(), 0.00001);
+        for (int i = 0; i < 1000000; i++) {
             Variable predict = kxPlusB.forward(x)[0];
             Variable loss = predict.sub(y).square().mean();
             t.grad2zero(loss);
