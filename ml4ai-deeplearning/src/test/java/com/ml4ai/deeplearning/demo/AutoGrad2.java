@@ -3,7 +3,7 @@ package com.ml4ai.deeplearning.demo;
 import com.ml4ai.deeplearning.nn.Nd4jUtil;
 import com.ml4ai.deeplearning.nn.core.Toolkit;
 import com.ml4ai.deeplearning.nn.core.Variable;
-import com.google.gson.Gson;
+import com.ml4ai.deeplearning.nn.core.optimizers.BinaryGradientDescent;
 import com.ml4ai.deeplearning.nn.core.optimizers.Moment;
 import com.ml4ai.deeplearning.nn.core.optimizers.NNOptimizer;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,7 @@ import org.nd4j.linalg.factory.Nd4j;
  * Created by lee on 2018/3/27.
  */
 @Slf4j
-public class AutoGrad {
+public class AutoGrad2 {
 
     public static void main(String[] arguments) {
 
@@ -42,7 +42,7 @@ public class AutoGrad {
         //初始化图工具
         Toolkit t = new Toolkit();
         //初始化参数优化器，监视要优化的参数，用动量优化器，即权重矩阵和偏执各二项
-        NNOptimizer optimizer = new Moment(new Variable[]{weights1, weight2, bias1, bias2}, 0.001, 0.99);
+        NNOptimizer optimizer = new BinaryGradientDescent(new Variable[]{weights1, weight2, bias1, bias2}, 0.001);
 
         for (int i = 0; i < 10000; i++) {
             //前向计算
